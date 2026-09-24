@@ -9,7 +9,7 @@ export function moveAxisFromDrag(dx, radius) {
 
 /**
  * 조준 스틱: 자기 레일에서 상대 레일을 향하는 반원으로 제한한다.
- * 반대쪽 Y 성분은 0으로 자르고, 남은 벡터가 데드존 밖일 때만 armed(발사 준비).
+ * 반대쪽 Y 성분은 0으로 자르고, 남은 벡터가 데드존 밖일 때만 armed(조준 중 → 자동 발사).
  */
 export function aimFromDrag(dx, dy, radius, team, previousAim) {
   const cy = team === 'isb' ? Math.max(0, dy) : Math.min(0, dy);
@@ -29,11 +29,11 @@ function bindStick(el, handlers) {
   const knob = el.querySelector('.knob');
   let pointerId = null, cx = 0, cy = 0, radius = 1;
   const drag = (e) => handlers.drag(e.clientX - cx, e.clientY - cy, radius, knob);
-  const end = (fire) => {
+  const end = () => {
     if (pointerId === null) return;
     pointerId = null;
     knob.style.transform = '';
-    handlers.end(fire);
+    handlers.end();
   };
   el.addEventListener('pointerdown', (e) => {
     if (pointerId !== null) return;
@@ -44,10 +44,10 @@ function bindStick(el, handlers) {
     drag(e);
   });
   el.addEventListener('pointermove', (e) => { if (e.pointerId === pointerId) drag(e); });
-  el.addEventListener('pointerup', (e) => { if (e.pointerId === pointerId) end(true); });
-  el.addEventListener('pointercancel', (e) => { if (e.pointerId === pointerId) end(false); });
-  el.addEventListener('lostpointercapture', (e) => { if (e.pointerId === pointerId) end(false); });
-  return () => end(false);
+  for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+    el.addEventListener(type, (e) => { if (e.pointerId === pointerId) end(); });
+  }
+  return end;
 }
 
 function stickElement(kind, label) {
@@ -59,7 +59,7 @@ function stickElement(kind, label) {
   return el;
 }
 
-/** 플레이어별 조작 패널을 만들고 입력 프레임에 연결한다. cancelAll()은 발사 없이 모든 스틱을 놓는다. */
+/** 플레이어별 조작 패널을 만들고 입력 프레임에 연결한다. cancelAll()은 모든 스틱을 놓아 사격을 멈춘다. */
 export function createControls(groups, players, inputs) {
   const cancels = [];
   for (const team of ['earth', 'isb']) {
@@ -91,10 +91,7 @@ export function createControls(groups, players, inputs) {
           frame.aiming = r.armed;
           placeKnob(knob, r.x, r.y, radius);
         },
-        end(fire) {
-          if (fire && frame.aiming) frame.fireReleased = true;
-          frame.aiming = false;
-        },
+        end() { frame.aiming = false; },
       }));
     }
   }

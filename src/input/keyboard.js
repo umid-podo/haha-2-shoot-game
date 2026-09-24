@@ -8,10 +8,10 @@ export const KEYMAP = {
   P4: { left: 'Numpad4', right: 'Numpad6', aimLeft: 'Numpad8', aimRight: 'Numpad5', fire: 'Numpad0' },
 };
 export const KEY_LABELS = {
-  P1: 'A/D 이동 · W/S 조준 · F 발사',
-  P2: '←/→ 이동 · ↑/↓ 조준 · Enter 발사',
-  P3: 'J/L 이동 · I/K 조준 · H 발사',
-  P4: 'Num4/6 이동 · Num8/5 조준 · Num0 발사',
+  P1: 'A/D 이동 · W/S 조준 · F 누르고 있으면 연사',
+  P2: '←/→ 이동 · ↑/↓ 조준 · Enter 누르고 있으면 연사',
+  P3: 'J/L 이동 · I/K 조준 · H 누르고 있으면 연사',
+  P4: 'Num4/6 이동 · Num8/5 조준 · Num0 누르고 있으면 연사',
 };
 
 const held = new Set();
@@ -40,7 +40,7 @@ export function attachKeyboard(getInputs, onEscape) {
     const inputs = getInputs();
     if (!inputs || !held.delete(e.code)) return;
     const frame = inputs[fireOwner[e.code]];
-    if (frame && frame.aiming) { frame.aiming = false; frame.fireReleased = true; }
+    if (frame) frame.aiming = false;
   });
 }
 

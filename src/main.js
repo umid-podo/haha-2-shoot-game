@@ -1,5 +1,5 @@
 import { TICK, COUNTDOWN, TEAM_NAME } from './game/config.js';
-import { SLOTS, createMatch, createInputs, cancelInputs } from './game/state.js';
+import { SLOTS, createMatch, createInputs, cancelInputs, defaultLoadout } from './game/state.js';
 import { step } from './game/update.js';
 import { createControls } from './input/pointer.js';
 import { attachKeyboard, applyKeyboard, clearKeys } from './input/keyboard.js';
@@ -13,6 +13,7 @@ const MAX_STEPS_PER_FRAME = 6;
 
 const settings = loadSettings();
 let playerCount = 2;
+let loadout = defaultLoadout(4);
 let match = null;
 let inputs = null;
 let controls = null;
@@ -28,7 +29,7 @@ function cancelAllInput() {
 
 function startMatch() {
   unlock();
-  match = createMatch(playerCount);
+  match = createMatch(playerCount, loadout);
   inputs = createInputs(match.players);
   clearKeys();
   controls = createControls(
@@ -62,7 +63,10 @@ const screens = createScreens({
   onSelectCount(count) {
     unlock();
     playerCount = count;
-    screens.showReady(SLOTS.slice(0, count));
+    screens.showReady(SLOTS.slice(0, count), loadout);
+  },
+  onPick(slotId, key, value) {
+    loadout[slotId] = { ...loadout[slotId], [key]: value };
   },
   onStart: startMatch,
   onMenu() { match = null; screens.show('menu'); },
@@ -94,8 +98,10 @@ function frame(now) {
       steps++;
       renderer.addEvents(events);
       playEvents(events);
-      if (events.some((e) => e.type === 'hit')) {
-        screens.announce(`${TEAM_NAME.earth} ${match.scores.earth}점, ${TEAM_NAME.isb} ${match.scores.isb}점`);
+      for (const e of events) {
+        if (e.type !== 'down') continue;
+        const p = match.players.find((pl) => pl.id === e.playerId);
+        screens.announce(`${TEAM_NAME[p.team]} ${p.id} ${p.name} 쓰러짐`);
       }
       if (match.phase === 'result') {
         cancelAllInput();

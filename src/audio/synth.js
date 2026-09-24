@@ -26,10 +26,20 @@ function tone(freq, duration, type, delay = 0) {
   osc.stop(start + duration);
 }
 
+const FIRE_TONE = { rifle: [620, 0.04], pistol: [520, 0.06], dual: [560, 0.05], rpg: [140, 0.25] };
+
 export function playEvents(events) {
+  // 돌격소총 연사처럼 한 틱에 같은 소리가 겹치면 한 번만 낸다.
+  const played = new Set();
   for (const e of events) {
-    if (e.type === 'fire') tone(520, 0.06, 'square');
-    if (e.type === 'hit') { tone(880, 0.08, 'square'); tone(1320, 0.12, 'square', 0.08); }
-    if (e.type === 'result') [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, 'triangle', i * 0.13));
+    const key = e.type === 'fire' ? `fire-${e.weapon}` : e.type;
+    if (played.has(key)) continue;
+    played.add(key);
+    if (e.type === 'fire') { const [f, d] = FIRE_TONE[e.weapon] ?? FIRE_TONE.pistol; tone(f, d, 'square'); }
+    if (e.type === 'hit') tone(880, 0.07, 'square');
+    if (e.type === 'block') tone(300, 0.05, 'triangle');
+    if (e.type === 'explode') { tone(90, 0.35, 'sawtooth'); tone(60, 0.4, 'square', 0.05); }
+    if (e.type === 'down') [660, 440, 220].forEach((f, i) => tone(f, 0.12, 'square', i * 0.1));
+    if (e.type === 'result') [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, 'triangle', i * 0.13 + 0.3));
   }
 }

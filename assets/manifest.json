@@ -10,16 +10,16 @@
   "assets": [
     {
       "id": "arena",
-      "name": "두 레일 경기장",
-      "path": "backgrounds/arena.png",
-      "width": 1536,
-      "height": 1024,
-      "bytes": 2248009,
-      "format": "png",
+      "name": "건물 옥상 경기장",
+      "path": "backgrounds/rooftop.svg",
+      "width": 1200,
+      "height": 800,
+      "format": "svg",
       "hasAlphaChannel": false,
       "alphaInspection": null,
-      "source": "built-in image_gen",
-      "kind": "background"
+      "source": "project-authored vector",
+      "kind": "background",
+      "bytes": 3214
     },
     {
       "id": "earth-arrow",
@@ -182,6 +182,17 @@
       "format": "svg",
       "source": "project-authored vector",
       "kind": "effect"
+    },
+    {
+      "id": "fighter-jet",
+      "name": "전투기",
+      "path": "effects/fighter-jet.svg",
+      "width": 260,
+      "height": 200,
+      "format": "svg",
+      "source": "project-authored vector",
+      "kind": "effect",
+      "bytes": 739
     }
   ]
 }
